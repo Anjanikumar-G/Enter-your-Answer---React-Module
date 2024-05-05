@@ -1,30 +1,29 @@
 import React, { useState } from "react";
-import "../styles/App.css";
 
 const questions = [
   {
     question: "What is the capital of France?",
-    answer: "Paris",
+    answer: "paris",
     score: 1
   },
   {
     question: "What is the largest country in the world?",
-    answer: "Russia",
+    answer: "russia",
     score: 1
   },
   {
     question: "What is the currency of Japan?",
-    answer: "Yen",
+    answer: "yen",
     score: 1
   },
   {
     question: "What is the tallest mammal?",
-    answer: "Giraffe",
+    answer: "giraffe",
     score: 1
   },
   {
     question: "What is the chemical symbol for gold?",
-    answer: "Au",
+    answer: "au",
     score: 1
   }
 ];
@@ -36,34 +35,41 @@ function Quiz() {
   const [gameOver, setGameOver] = useState(false);
   const [score, setScore] = useState(0);
 
-  const handleAnswerSubmit = () => {
-    const currentQuestion = questions[questionIndex];
-    if (answer.toLowerCase() === currentQuestion.answer.toLowerCase()) {
-      setScore(score + currentQuestion.score);
-      setAnswer("");
-      if (questionIndex < questions.length - 1) {
-        setQuestionIndex(questionIndex + 1);
-        setAttempts(0); // Reset attempts when moving to the next question
-      } else {
-        setGameOver(true);
-      }
+  const handleInputChange = (e) => {
+    setAnswer(e.target.value);
+  };
+
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+    const lowercaseAnswer = answer.toLowerCase();
+    const lowercaseCorrectAnswer = questions[questionIndex].answer.toLowerCase();
+    
+    if (lowercaseAnswer === lowercaseCorrectAnswer) {
+      setScore(score + questions[questionIndex].score);
+      moveToNextQuestion();
     } else {
       setAttempts(attempts + 1);
-      setAnswer("");
-      if (attempts >= 2) {
-        if (questionIndex < questions.length - 1) {
-          setQuestionIndex(questionIndex + 1);
-          setAttempts(0); // Reset attempts when moving to the next question
-        } else {
-          setGameOver(true);
-        }
+      if (attempts === 0) {
+        alert("Incorrect. Two attempts remaining.");
+      } else if (attempts === 1) {
+        alert("Incorrect. One attempt remaining.");
+      } else {
+        moveToNextQuestion();
       }
     }
   };
 
-  const handleRetryClick = () => {
-    setQuestionIndex(0);
+  const moveToNextQuestion = () => {
+    setQuestionIndex(questionIndex + 1);
+    setAttempts(0);
     setAnswer("");
+    if (questionIndex + 1 === questions.length) {
+      setGameOver(true);
+    }
+  };
+
+  const handleRetry = () => {
+    setQuestionIndex(0);
     setAttempts(0);
     setGameOver(false);
     setScore(0);
@@ -74,31 +80,20 @@ function Quiz() {
       <div className="game-over-container">
         <h1 className="game-over-heading">Game Over</h1>
         <p className="score-para">Your score: {score}/{questions.length}</p>
-        <button className="retry-btn" onClick={handleRetryClick}>Retry</button>
+        <button className="retry-btn" onClick={handleRetry}>Retry</button>
       </div>
     );
   }
 
-  const currentQuestion = questions[questionIndex];
-
   return (
     <div>
-      <h1 className="question-text">{currentQuestion.question}</h1>
-      <input
-        className="answer-input"
-        value={answer}
-        onChange={(e) => setAnswer(e.target.value)}
-      /><br />
-      <button className="submit-btn" onClick={handleAnswerSubmit}>Submit</button>
-      {attempts > 0 && (
-        <p className="attempt-alert">
-          {attempts === 1
-            ? "Incorrect. Two attempts remaining."
-            : attempts === 2
-            ? "Incorrect. One attempt remaining."
-            : ""}
-        </p>
-      )}
+      <h1 className="question-text">{questions[questionIndex].question}</h1>
+      <form onSubmit={handleFormSubmit}>
+        <input className="answer-input" value={answer} onChange={handleInputChange} />
+        <br />
+        <button className="submit-btn">Submit</button>
+      </form>
+      {attempts > 0 && <p className="attempt-alert">Incorrect. {2 - attempts} attempts remaining.</p>}
     </div>
   );
 }
